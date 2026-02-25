@@ -523,15 +523,21 @@ button {
 
 /* ===== CONTENT PAGES GENERAL ===== */
 .page-light {
-    background: var(--cream);
+    background-color: var(--cream);
+    background-image: radial-gradient(rgba(26, 86, 50, 0.06) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
 }
 
 .page-white {
-    background: white;
+    background-color: white;
+    background-image: radial-gradient(rgba(26, 86, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
 .page-warm {
-    background: var(--warm-white);
+    background-color: var(--warm-white);
+    background-image: radial-gradient(rgba(26, 86, 50, 0.06) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
 }
 
 .page-green {
