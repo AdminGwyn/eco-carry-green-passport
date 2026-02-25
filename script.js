@@ -37,17 +37,52 @@ function initPageNavigation() {
   // Mouse wheel
   let wheelTimeout;
   container.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    if (isTransitioning) return;
+    if (isTransitioning) {
+      e.preventDefault();
+      return;
+    }
 
-    clearTimeout(wheelTimeout);
-    wheelTimeout = setTimeout(() => {
-      if (e.deltaY > 15 || e.deltaX > 15) {
-        goToPage(currentPage + 1);
-      } else if (e.deltaY < -15 || e.deltaX < -15) {
-        goToPage(currentPage - 1);
-      }
-    }, 50);
+    const activePage = pages[currentPage];
+
+    // Check if horizontal scrolling (e.g. trackpad swipe)
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      e.preventDefault();
+      clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(() => {
+        if (e.deltaX > 15) goToPage(currentPage + 1);
+        else if (e.deltaX < -15) goToPage(currentPage - 1);
+      }, 50);
+      return;
+    }
+
+    // Check vertical scroll
+    const isScrollable = activePage.scrollHeight > activePage.clientHeight;
+
+    // allow a pixel margin for calculating bounds
+    const isAtTop = activePage.scrollTop <= 1;
+    const isAtBottom = Math.ceil(activePage.scrollTop + activePage.clientHeight) >= activePage.scrollHeight - 1;
+
+    let shouldFlip = false;
+    let flipDirection = 0;
+
+    // Scrolling down (deltaY > 0) -> only flip if not scrollable or at bottom
+    if (e.deltaY > 15 && (!isScrollable || isAtBottom)) {
+      shouldFlip = true;
+      flipDirection = 1;
+      // Scrolling up (deltaY < 0) -> only flip if not scrollable or at top
+    } else if (e.deltaY < -15 && (!isScrollable || isAtTop)) {
+      shouldFlip = true;
+      flipDirection = -1;
+    }
+
+    if (shouldFlip) {
+      e.preventDefault();
+      clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(() => {
+        if (flipDirection === 1) goToPage(currentPage + 1);
+        else if (flipDirection === -1) goToPage(currentPage - 1);
+      }, 50);
+    }
   }, { passive: false });
 
   // Touch/swipe
