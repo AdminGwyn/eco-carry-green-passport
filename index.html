@@ -509,7 +509,10 @@
           </div>
           <div class="qr-divider">hoặc quét mã QR</div>
           <div class="qr-code-display">
-            <div class="qr-placeholder">
+            <div id="qrReader"
+              style="width: 100%; display: none; margin-bottom: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            </div>
+            <div class="qr-placeholder" id="startQrScanBtn" style="cursor: pointer; transition: transform 0.2s;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="3" width="7" height="7" />
                 <rect x="14" y="3" width="7" height="7" />
@@ -519,7 +522,16 @@
                 <line x1="14" y1="21" x2="17" y2="21" />
               </svg>
             </div>
-            <p class="qr-text">Quét mã QR trên tag túi của bạn</p>
+            <p class="qr-text" id="qrScanStatus">Nhấn vào biểu tượng để bật Camera quét mã</p>
+            <button class="qr-scan-btn hidden" id="stopQrScanBtn"
+              style="margin-top: 15px; background-color: #e74c3c; border: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="width:18px;height:18px">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Tắt Camera
+            </button>
           </div>
         </div>
 
@@ -750,6 +762,7 @@
     </div>
   </nav>
 
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="script.js"></script>
 </body>
 

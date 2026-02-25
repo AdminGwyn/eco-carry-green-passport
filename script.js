@@ -337,6 +337,85 @@ function initQRLookup() {
       input.value = '';
     });
   }
+
+  // ===== HTML5 QR Code Scanner Integration =====
+  const startQrScanBtn = document.getElementById('startQrScanBtn');
+  const stopQrScanBtn = document.getElementById('stopQrScanBtn');
+  const qrScanStatus = document.getElementById('qrScanStatus');
+  const qrReader = document.getElementById('qrReader');
+  let html5QrcodeScanner = null;
+
+  function stopScan() {
+    if (html5QrcodeScanner) {
+      // Html5Qrcode.stop() returns a Promise
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+        if (qrReader) qrReader.style.display = 'none';
+        if (startQrScanBtn) startQrScanBtn.classList.remove('hidden');
+        if (stopQrScanBtn) stopQrScanBtn.classList.add('hidden');
+        if (qrScanStatus) qrScanStatus.textContent = 'Nhấn vào biểu tượng để bật Camera quét mã';
+      }).catch(err => {
+        console.error("Failed to stop scanner", err);
+      });
+    }
+  }
+
+  if (startQrScanBtn && qrReader) {
+    startQrScanBtn.addEventListener('click', () => {
+      if (typeof Html5Qrcode === 'undefined') {
+        qrScanStatus.textContent = 'Không tải được thư viện quét mã. Vui lòng tải lại trang.';
+        return;
+      }
+
+      startQrScanBtn.classList.add('hidden');
+      stopQrScanBtn.classList.remove('hidden');
+      qrReader.style.display = 'block';
+      qrScanStatus.textContent = 'Đang bật Camera... Hãy đưa mã QR vào khung hình';
+
+      html5QrcodeScanner = new Html5Qrcode("qrReader");
+
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText, decodedResult) => {
+          // Success callback
+
+          // Stop the scanner
+          stopScan();
+
+          // If the decoded text is an URL (e.g. from the physical physical tag), try to extract code
+          // For now, let's just use the decoded text or a default if it's our URL
+          let currentCode = decodedText;
+          if (currentCode.includes('eco-carry.site')) {
+            // Example if URL format is eco-carry.site/?qr=ECO-2026-0001
+            const match = currentCode.match(/ECO-\d{4}-\d{4}/i);
+            if (match) currentCode = match[0];
+            else currentCode = 'ECO-2026-0001'; // Default Fallback
+          }
+
+          input.value = currentCode;
+          btn.click(); // Auto submit
+        },
+        (errorMessage) => {
+          // Continues scanning, suppress error output to keep it clean
+        }
+      ).catch((err) => {
+        qrScanStatus.textContent = 'Lỗi truy cập Camera. Vui lòng cấp quyền (Allow) cho trình duyệt.';
+        startQrScanBtn.classList.remove('hidden');
+        stopQrScanBtn.classList.add('hidden');
+        qrReader.style.display = 'none';
+      });
+    });
+  }
+
+  if (stopQrScanBtn) {
+    stopQrScanBtn.addEventListener('click', () => {
+      stopScan();
+    });
+  }
 }
 
 // ===== Resize handler for timeline indicator =====
