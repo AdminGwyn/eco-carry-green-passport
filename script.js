@@ -431,7 +431,7 @@ function initQRLookup() {
       qrScanStatus.textContent = 'Đang đọc thẻ mã QR...';
       const html5QrCode = new Html5Qrcode("qrReader");
 
-      html5QrCode.scanFile(file, true)
+      html5QrCode.scanFile(file, false)
         .then(decodedText => {
           let currentCode = decodedText;
           if (currentCode.includes('eco-carry.site')) {
