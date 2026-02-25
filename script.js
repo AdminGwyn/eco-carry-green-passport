@@ -255,6 +255,7 @@ function initQRLookup() {
   const formContainer = document.getElementById('qrFormContainer');
   const resultContainer = document.getElementById('qrResultContainer');
   const resetBtn = document.getElementById('resetLookupBtn');
+  const qrSectionHeader = document.getElementById('qrSectionHeader');
 
   if (!btn || !input || !formContainer || !resultContainer) return;
 
@@ -278,9 +279,15 @@ function initQRLookup() {
             formContainer.classList.add('hidden');
             resultContainer.classList.remove('hidden');
 
+            if (qrSectionHeader) {
+              qrSectionHeader.classList.add('hidden');
+            }
+
             // Trigger counters
             const counters = resultContainer.querySelectorAll('.new-counter');
             counters.forEach(c => {
+              // reset counter content to 0
+              c.textContent = '0';
               animateCounter(c);
             });
 
@@ -310,6 +317,9 @@ function initQRLookup() {
     resetBtn.addEventListener('click', () => {
       resultContainer.classList.add('hidden');
       formContainer.classList.remove('hidden');
+      if (qrSectionHeader) {
+        qrSectionHeader.classList.remove('hidden');
+      }
       input.value = '';
     });
   }

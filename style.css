@@ -1638,7 +1638,8 @@ button {
 }
 
 .metric-card {
-    background: white;
+    background: #FDFBF7;
+    /* Màu Be nhạt / Trắng sữa theo yêu cầu */
     border-radius: var(--radius-lg);
     padding: 24px;
     margin-bottom: 20px;
@@ -1737,6 +1738,11 @@ button {
     color: var(--text-medium);
     font-style: italic;
     line-height: 1.3;
+}
+
+/* Base utility for hiding elements */
+.hidden {
+    display: none !important;
 }
 
 /* ===== RESPONSIVE ===== */
