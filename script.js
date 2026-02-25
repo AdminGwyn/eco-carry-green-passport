@@ -1,296 +1,242 @@
-// ===== DOM Ready =====
+// ===== STATE =====
+let currentPage = 0;
+let totalPages = 0;
+let isTransitioning = false;
+let pages = [];
+let timelineDots = [];
+
+// ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
+  pages = document.querySelectorAll('.page');
+  totalPages = pages.length;
+  timelineDots = document.querySelectorAll('.timeline-dot');
+
   initLoadingScreen();
-  initNavbar();
-  initScrollProgress();
-  initScrollAnimations();
+  initPageNavigation();
+  initTimelineNav();
   initCountUp();
   initComparisonBars();
-  initBackToTop();
-  initSmoothScroll();
-  initQRLookup();
   initCertificateActions();
-  initParallax();
+  initQRLookup();
+  updateTimelineIndicator();
 });
 
 // ===== Loading Screen =====
 function initLoadingScreen() {
-  const loadingScreen = document.getElementById('loadingScreen');
-  if (!loadingScreen) return;
-  
+  const screen = document.getElementById('loadingScreen');
+  if (!screen) return;
   setTimeout(() => {
-    loadingScreen.classList.add('hidden');
-    // Trigger hero animations after loading
-    setTimeout(() => {
-      document.body.classList.add('loaded');
-    }, 300);
-  }, 1800);
+    screen.classList.add('hidden');
+  }, 2000);
 }
 
-// ===== Navbar =====
-function initNavbar() {
-  const navbar = document.getElementById('navbar');
-  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-  const navLinks = document.getElementById('navLinks');
-  
-  // Scroll effect
-  let lastScroll = 0;
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.scrollY;
-    
-    if (currentScroll > 80) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
+// ===== Page Navigation (scroll/swipe = flip page) =====
+function initPageNavigation() {
+  const container = document.getElementById('bookContainer');
+
+  // Mouse wheel
+  let wheelTimeout;
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (isTransitioning) return;
+
+    clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => {
+      if (e.deltaY > 15 || e.deltaX > 15) {
+        goToPage(currentPage + 1);
+      } else if (e.deltaY < -15 || e.deltaX < -15) {
+        goToPage(currentPage - 1);
+      }
+    }, 50);
+  }, { passive: false });
+
+  // Touch/swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  container.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  container.addEventListener('touchend', (e) => {
+    if (isTransitioning) return;
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    const dy = touchStartY - e.changedTouches[0].clientY;
+
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx > 0) {
+        goToPage(currentPage + 1);
+      } else {
+        goToPage(currentPage - 1);
+      }
     }
-    
-    lastScroll = currentScroll;
   }, { passive: true });
-  
-  // Mobile menu
-  if (mobileMenuBtn) {
-    mobileMenuBtn.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-      mobileMenuBtn.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
-    });
-  }
-  
-  // Close mobile menu on link click
-  if (navLinks) {
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        if (mobileMenuBtn) mobileMenuBtn.textContent = '☰';
-      });
-    });
-  }
-  
-  // Active section highlighting
-  const sections = document.querySelectorAll('.section');
-  const navAnchors = document.querySelectorAll('.nav-links a:not(.nav-cta)');
-  
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 200;
-      if (window.scrollY >= sectionTop) {
-        current = section.getAttribute('id');
-      }
-    });
-    
-    navAnchors.forEach(anchor => {
-      anchor.classList.remove('active');
-      if (anchor.getAttribute('href') === `#${current}`) {
-        anchor.classList.add('active');
-      }
-    });
-  }, { passive: true });
-}
 
-// ===== Scroll Progress =====
-function initScrollProgress() {
-  const progressBar = document.getElementById('scrollProgress');
-  if (!progressBar) return;
-  
-  window.addEventListener('scroll', () => {
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = (window.scrollY / scrollHeight) * 100;
-    progressBar.style.width = `${progress}%`;
-  }, { passive: true });
-}
-
-// ===== Scroll Animations =====
-function initScrollAnimations() {
-  const elements = document.querySelectorAll('[data-animate]');
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        // Don't unobserve so animations play once
-      }
-    });
-  }, {
-    threshold: 0.15,
-    rootMargin: '0px 0px -50px 0px'
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (isTransitioning) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      goToPage(currentPage + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goToPage(currentPage - 1);
+    }
   });
-  
-  elements.forEach(el => observer.observe(el));
 }
 
-// ===== Count Up Animation =====
-function initCountUp() {
-  const counters = document.querySelectorAll('.count-up');
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !entry.target.dataset.counted) {
-        entry.target.dataset.counted = 'true';
-        animateCounter(entry.target);
-      }
-    });
-  }, { threshold: 0.5 });
-  
-  counters.forEach(counter => observer.observe(counter));
-}
+// ===== Go To Page =====
+function goToPage(index) {
+  if (index < 0 || index >= totalPages || index === currentPage || isTransitioning) return;
 
-function animateCounter(element) {
-  const target = parseInt(element.dataset.target);
-  const duration = 2000;
-  const startTime = performance.now();
-  
-  function update(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    
-    // Ease out quad
-    const easedProgress = 1 - (1 - progress) * (1 - progress);
-    const current = Math.round(easedProgress * target);
-    
-    element.textContent = current;
-    
-    if (progress < 1) {
-      requestAnimationFrame(update);
+  isTransitioning = true;
+  currentPage = index;
+
+  // Update page classes
+  pages.forEach((page, i) => {
+    page.classList.remove('active', 'prev', 'next', 'far-prev', 'far-next');
+
+    if (i === currentPage) {
+      page.classList.add('active');
+      // Scroll page content to top
+      page.scrollTop = 0;
+    } else if (i === currentPage - 1) {
+      page.classList.add('prev');
+    } else if (i === currentPage + 1) {
+      page.classList.add('next');
+    } else if (i < currentPage - 1) {
+      page.classList.add('far-prev');
+    } else {
+      page.classList.add('far-next');
     }
+  });
+
+  // Update timeline
+  updateTimelineActive();
+  updateTimelineIndicator();
+
+  // Trigger page-specific animations
+  triggerPageAnimations(currentPage);
+
+  // Unlock after transition
+  setTimeout(() => {
+    isTransitioning = false;
+  }, 950);
+}
+
+// ===== Timeline Navigation =====
+function initTimelineNav() {
+  timelineDots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = parseInt(dot.dataset.target);
+      goToPage(target);
+    });
+  });
+}
+
+function updateTimelineActive() {
+  timelineDots.forEach(dot => {
+    dot.classList.remove('active');
+    if (parseInt(dot.dataset.target) === currentPage) {
+      dot.classList.add('active');
+    }
+  });
+}
+
+function updateTimelineIndicator() {
+  const indicator = document.getElementById('timelineIndicator');
+  const activeDot = document.querySelector(`.timeline-dot[data-target="${currentPage}"]`);
+  if (!indicator || !activeDot) return;
+
+  const rect = activeDot.getBoundingClientRect();
+  const parentRect = activeDot.parentElement.getBoundingClientRect();
+
+  indicator.style.left = (rect.left - parentRect.left) + 'px';
+  indicator.style.width = rect.width + 'px';
+}
+
+// ===== Page-specific Animations =====
+function triggerPageAnimations(pageIndex) {
+  // Impact Dashboard counters
+  if (pageIndex === 2) {
+    setTimeout(() => {
+      const counters = pages[2].querySelectorAll('.count-up');
+      counters.forEach(c => {
+        if (!c.dataset.counted) {
+          c.dataset.counted = 'true';
+          animateCounter(c);
+        }
+      });
+      // Comparison bars
+      const bars = pages[2].querySelectorAll('.bar-fill');
+      bars.forEach(bar => {
+        const w = bar.dataset.width;
+        bar.style.width = w + '%';
+      });
+    }, 400);
   }
-  
-  requestAnimationFrame(update);
+}
+
+// ===== Count Up =====
+function initCountUp() {
+  // Will be triggered when page 2 becomes active
+}
+
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const duration = 2000;
+  const start = performance.now();
+
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 // ===== Comparison Bars =====
 function initComparisonBars() {
-  const bars = document.querySelectorAll('.comparison-fill');
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const width = entry.target.dataset.width;
-        setTimeout(() => {
-          entry.target.style.width = `${width}%`;
-        }, 300);
-      }
-    });
-  }, { threshold: 0.5 });
-  
-  bars.forEach(bar => observer.observe(bar));
-}
-
-// ===== Back to Top =====
-function initBackToTop() {
-  const btn = document.getElementById('backToTop');
-  if (!btn) return;
-  
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 500) {
-      btn.classList.add('visible');
-    } else {
-      btn.classList.remove('visible');
-    }
-  }, { passive: true });
-  
-  btn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-}
-
-// ===== Smooth Scroll =====
-function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', (e) => {
-      e.preventDefault();
-      const target = document.querySelector(anchor.getAttribute('href'));
-      if (target) {
-        const offset = 80; // navbar height
-        const targetPosition = target.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({
-          top: targetPosition,
-          behavior: 'smooth'
-        });
-      }
-    });
-  });
-}
-
-// ===== QR Lookup =====
-function initQRLookup() {
-  const lookupBtn = document.getElementById('lookupBtn');
-  const productCode = document.getElementById('productCode');
-  
-  if (!lookupBtn || !productCode) return;
-  
-  lookupBtn.addEventListener('click', () => {
-    const code = productCode.value.trim();
-    if (code) {
-      // Simulate lookup with animation
-      lookupBtn.textContent = '⏳ Đang tra cứu...';
-      lookupBtn.style.opacity = '0.7';
-      
-      setTimeout(() => {
-        lookupBtn.textContent = '✅ Đã tìm thấy!';
-        lookupBtn.style.opacity = '1';
-        
-        // Show results - scroll to supply chain
-        setTimeout(() => {
-          lookupBtn.textContent = '🔍 Tra Cứu';
-          const supplyChain = document.getElementById('supply-chain');
-          if (supplyChain) {
-            supplyChain.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 1500);
-      }, 2000);
-    } else {
-      productCode.style.borderColor = '#e74c3c';
-      productCode.placeholder = '⚠️ Vui lòng nhập mã sản phẩm...';
-      setTimeout(() => {
-        productCode.style.borderColor = '';
-        productCode.placeholder = 'Nhập mã sản phẩm (VD: ECO-2026-0001)';
-      }, 2000);
-    }
-  });
-  
-  // Enter key
-  productCode.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      lookupBtn.click();
-    }
-  });
+  // Will be triggered when page 2 becomes active
 }
 
 // ===== Certificate Actions =====
 function initCertificateActions() {
   const downloadBtn = document.getElementById('downloadCert');
   const shareBtn = document.getElementById('shareCert');
-  
+
   if (downloadBtn) {
     downloadBtn.addEventListener('click', () => {
-      // Simulate download
-      downloadBtn.innerHTML = '⏳ Đang tạo...';
+      const svgIcon = downloadBtn.querySelector('svg').outerHTML;
+      downloadBtn.innerHTML = svgIcon + ' Đang tạo...';
       setTimeout(() => {
-        downloadBtn.innerHTML = '✅ Đã tải xuống!';
+        downloadBtn.innerHTML = svgIcon + ' Đã tải xuống!';
         setTimeout(() => {
-          downloadBtn.innerHTML = '⬇️ Tải Chứng Nhận';
+          downloadBtn.innerHTML = svgIcon + ' Tải Chứng Nhận';
         }, 2000);
       }, 1500);
     });
   }
-  
+
   if (shareBtn) {
     shareBtn.addEventListener('click', () => {
-      // Try native share API
+      const svgIcon = shareBtn.querySelector('svg').outerHTML;
       if (navigator.share) {
         navigator.share({
           title: 'Green Contribution Certificate - Eco-carry',
           text: 'Tôi vừa nhận được Chứng nhận Đóng góp Xanh từ Eco-carry! 🌿',
           url: window.location.href
-        }).catch(() => {});
+        }).catch(() => { });
       } else {
-        // Fallback: copy to clipboard
         navigator.clipboard.writeText(
-          `🌿 Tôi vừa nhận được Chứng nhận Đóng góp Xanh từ Eco-carry! Cùng tham gia hành trình tái sinh: ${window.location.href}`
+          `🌿 Chứng nhận Đóng góp Xanh từ Eco-carry! ${window.location.href}`
         ).then(() => {
-          shareBtn.innerHTML = '✅ Đã sao chép link!';
+          shareBtn.innerHTML = svgIcon + ' Đã sao chép!';
           setTimeout(() => {
-            shareBtn.innerHTML = '📤 Chia Sẻ Lên MXH';
+            shareBtn.innerHTML = svgIcon + ' Chia Sẻ Lên MXH';
           }, 2000);
         });
       }
@@ -298,50 +244,45 @@ function initCertificateActions() {
   }
 }
 
-// ===== Parallax Effect =====
-function initParallax() {
-  const hero = document.querySelector('.hero-bg-overlay');
-  const particles = document.querySelectorAll('.particle');
-  
-  window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    
-    if (hero && scrollY < window.innerHeight) {
-      hero.style.transform = `translateY(${scrollY * 0.3}px)`;
-    }
-    
-    particles.forEach((particle, i) => {
-      const speed = 0.1 + (i * 0.05);
-      particle.style.transform = `translateY(${scrollY * speed}px)`;
-    });
-  }, { passive: true });
-}
+// ===== QR Lookup =====
+function initQRLookup() {
+  const btn = document.getElementById('lookupBtn');
+  const input = document.getElementById('productCode');
+  if (!btn || !input) return;
 
-// ===== Additional: Smooth reveal for timeline items on hover =====
-document.querySelectorAll('.timeline-item').forEach(item => {
-  item.addEventListener('mouseenter', function() {
-    this.querySelector('.timeline-overlay').style.transform = 'translateY(0)';
-    this.querySelector('.timeline-overlay').style.opacity = '1';
+  const originalHTML = btn.innerHTML;
+
+  btn.addEventListener('click', () => {
+    const code = input.value.trim();
+    if (code) {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Đang tra cứu...';
+      btn.style.opacity = '0.7';
+
+      setTimeout(() => {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Đã tìm thấy!';
+        btn.style.opacity = '1';
+
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          goToPage(1);
+        }, 1500);
+      }, 2000);
+    } else {
+      input.style.borderColor = '#e74c3c';
+      input.placeholder = '⚠️ Vui lòng nhập mã...';
+      setTimeout(() => {
+        input.style.borderColor = '';
+        input.placeholder = 'VD: ECO-2026-0001';
+      }, 2000);
+    }
   });
-});
 
-// ===== Typing effect for hero (subtle) =====
-function initTypingEffect() {
-  const subtitle = document.querySelector('.hero-subtitle');
-  if (!subtitle) return;
-  
-  const text = subtitle.textContent;
-  subtitle.textContent = '';
-  subtitle.style.opacity = '1';
-  
-  let i = 0;
-  function type() {
-    if (i < text.length) {
-      subtitle.textContent += text.charAt(i);
-      i++;
-      setTimeout(type, 20);
-    }
-  }
-  
-  setTimeout(type, 2000);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btn.click();
+  });
 }
+
+// ===== Resize handler for timeline indicator =====
+window.addEventListener('resize', () => {
+  updateTimelineIndicator();
+});
