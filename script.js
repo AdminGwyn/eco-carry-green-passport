@@ -349,7 +349,10 @@ function initQRLookup() {
   });
 
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') btn.click();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      btn.click();
+    }
   });
 
   if (resetBtn) {
