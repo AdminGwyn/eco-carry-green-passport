@@ -442,16 +442,14 @@ function initQRLookup() {
           input.value = currentCode;
           qrScanStatus.textContent = 'Nhấn vào biểu tượng để bật Camera quét mã';
           btn.click(); // Auto submit result
+          qrFileInput.value = ''; // Reset file input
         })
         .catch(err => {
-          qrScanStatus.textContent = 'Không tìm thấy hoặc không thể đọc được mã QR trong ảnh này.';
+          qrScanStatus.textContent = 'Không tìm thấy hoặc không đọc được mã QR trong ảnh này.';
           setTimeout(() => {
             qrScanStatus.textContent = 'Nhấn vào biểu tượng để bật Camera quét mã';
           }, 3500);
-        })
-        .finally(() => {
-          html5QrCode.clear(); // Important: cleanup
-          qrFileInput.value = ''; // Reset file input so user can upload same file again if wanted
+          qrFileInput.value = ''; // Reset file input
         });
     });
   }
