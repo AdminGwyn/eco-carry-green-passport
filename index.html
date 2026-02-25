@@ -499,7 +499,7 @@
           <p class="section-title-en">(Product Lookup)</p>
           <p class="section-desc">Nhập mã sản phẩm hoặc quét mã QR trên tag túi.</p>
         </div>
-        <div class="qr-container">
+        <div class="qr-container" id="qrFormContainer">
           <div class="qr-input-group">
             <input type="text" class="qr-input" id="productCode" placeholder="VD: ECO-2026-0001">
             <button class="qr-scan-btn" id="lookupBtn">
@@ -524,6 +524,106 @@
             </div>
             <p class="qr-text">Quét mã QR trên tag túi của bạn</p>
           </div>
+        </div>
+
+        <!-- HIDDEN RESULT CONTAINER -->
+        <div class="qr-result-container hidden" id="qrResultContainer">
+          <div class="product-reveal-header">
+            <img src="images/BAG.png" alt="Eco-carry Bag" class="revealed-bag-img"
+              onerror="this.src='https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&h=400&fit=crop'">
+            <h3 class="revealed-bag-title">Túi Eco-carry Bền Vững</h3>
+            <p class="revealed-bag-code">Mã SP: ECO-2026-0001</p>
+          </div>
+
+          <h4 class="metrics-title">BẢNG CHỈ SỐ TÁC ĐỘNG (IMPACT METRICS)</h4>
+
+          <div class="metrics-grid">
+            <!-- Cột trái: Tiết kiệm tài nguyên -->
+            <div class="metrics-column">
+              <div class="metric-col-title">🟢 TIẾT KIỆM TÀI NGUYÊN</div>
+
+              <!-- Thẻ 1 -->
+              <div class="metric-card">
+                <div class="metric-icon-top">💧</div>
+                <div class="metric-info">
+                  <div class="metric-value"><span class="count-up new-counter"
+                      data-target="2700">0</span><small>Lít</small></div>
+                  <div class="metric-status">Lượng nước sạch được bảo toàn</div>
+                </div>
+                <div class="metric-comparison">
+                  <div class="mc-img">🚿</div>
+                  <div class="mc-text">
+                    <span>Tương đương với 50 lần tắm vòi sen trung bình.</span>
+                    <small>So với quy trình dệt nhuộm vải cotton mới.</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thẻ 2 -->
+              <div class="metric-card">
+                <div class="metric-icon-top">🔋</div>
+                <div class="metric-info">
+                  <div class="metric-value"><span class="count-up new-counter"
+                      data-target="15">0</span><small>kWh</small></div>
+                  <div class="metric-status">Điện năng tiêu thụ cắt giảm</div>
+                </div>
+                <div class="metric-comparison">
+                  <div class="mc-img">💡</div>
+                  <div class="mc-text">
+                    <span>Đủ để thắp sáng ngôi nhà bạn trong 2 tuần liên tục.</span>
+                    <small>Giảm thiểu nhờ quy trình tái chế thủ công tại Eco-carry.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột phải: Bảo vệ môi trường -->
+            <div class="metrics-column">
+              <div class="metric-col-title">🔵 BẢO VỆ MÔI TRƯỜNG</div>
+
+              <!-- Thẻ 3 -->
+              <div class="metric-card">
+                <div class="metric-icon-top">☁️</div>
+                <div class="metric-info">
+                  <div class="metric-value"><span class="count-up new-counter" data-target="1.2"
+                      data-decimal="true">0</span><small>kg CO2</small></div>
+                  <div class="metric-status">Giảm dấu chân Carbon (CO2e)</div>
+                </div>
+                <div class="metric-comparison">
+                  <div class="mc-img">🌱</div>
+                  <div class="mc-text">
+                    <span>Tương đương với việc trồng mới 01 cây xanh trong 1 tháng.</span>
+                    <small>Tổng lượng phát thải tránh được trong toàn bộ chu kỳ sản xuất.</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thẻ 4 -->
+              <div class="metric-card">
+                <div class="metric-icon-top">♻️</div>
+                <div class="metric-info">
+                  <div class="metric-value"><span class="count-up new-counter"
+                      data-target="500">0</span><small>Grams</small></div>
+                  <div class="metric-status">Vải vụn được tái sinh</div>
+                </div>
+                <div class="metric-comparison">
+                  <div class="mc-img">🗑️</div>
+                  <div class="mc-text">
+                    <span>Bạn đã giải cứu nửa ký rác thải dệt may khỏi bãi rác.</span>
+                    <small>Sử dụng 100% vải vụn thu gom trực tiếp từ làng nghề.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="qr-scan-btn" style="margin-top: 36px;" id="resetLookupBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+              <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            Tra Cứu Mã Khác
+          </button>
         </div>
       </div>
     </div>

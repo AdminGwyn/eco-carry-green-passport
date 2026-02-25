@@ -184,7 +184,8 @@ function initCountUp() {
 }
 
 function animateCounter(el) {
-  const target = parseInt(el.dataset.target);
+  const target = parseFloat(el.dataset.target);
+  const isDecimal = el.dataset.decimal === 'true';
   const duration = 2000;
   const start = performance.now();
 
@@ -192,7 +193,10 @@ function animateCounter(el) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(eased * target);
+    const current = eased * target;
+
+    el.textContent = isDecimal ? current.toFixed(1) : Math.round(current);
+
     if (progress < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -248,12 +252,16 @@ function initCertificateActions() {
 function initQRLookup() {
   const btn = document.getElementById('lookupBtn');
   const input = document.getElementById('productCode');
-  if (!btn || !input) return;
+  const formContainer = document.getElementById('qrFormContainer');
+  const resultContainer = document.getElementById('qrResultContainer');
+  const resetBtn = document.getElementById('resetLookupBtn');
+
+  if (!btn || !input || !formContainer || !resultContainer) return;
 
   const originalHTML = btn.innerHTML;
 
   btn.addEventListener('click', () => {
-    const code = input.value.trim();
+    const code = input.value.trim().toUpperCase();
     if (code) {
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Đang tra cứu...';
       btn.style.opacity = '0.7';
@@ -264,9 +272,26 @@ function initQRLookup() {
 
         setTimeout(() => {
           btn.innerHTML = originalHTML;
-          goToPage(1);
-        }, 1500);
-      }, 2000);
+
+          if (code === 'ECO-2026-0001') {
+            // Show result block
+            formContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+
+            // Trigger counters
+            const counters = resultContainer.querySelectorAll('.new-counter');
+            counters.forEach(c => {
+              animateCounter(c);
+            });
+
+            // Scroll to top of page 8 just to be sure
+            pages[8].scrollTop = 0;
+          } else {
+            // Fallback for other codes
+            goToPage(1);
+          }
+        }, 1200);
+      }, 1500);
     } else {
       input.style.borderColor = '#e74c3c';
       input.placeholder = '⚠️ Vui lòng nhập mã...';
@@ -280,6 +305,14 @@ function initQRLookup() {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') btn.click();
   });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      resultContainer.classList.add('hidden');
+      formContainer.classList.remove('hidden');
+      input.value = '';
+    });
+  }
 }
 
 // ===== Resize handler for timeline indicator =====
