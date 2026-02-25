@@ -111,10 +111,14 @@ function initPageNavigation() {
   // Keyboard
   document.addEventListener('keydown', (e) => {
     if (isTransitioning) return;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+
+    // Ignore keydown if user is typing in an input field
+    if (e.target.tagName.toLowerCase() === 'input') return;
+
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
       goToPage(currentPage + 1);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       goToPage(currentPage - 1);
     }
@@ -309,29 +313,29 @@ function initQRLookup() {
         setTimeout(() => {
           btn.innerHTML = originalHTML;
 
-          if (code === 'ECO-2026-0001') {
-            // Show result block
-            formContainer.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
+          // Cho phép mọi mã code đều hiển thị bảng Impact Metric thay vì văng về trang 1
+          formContainer.classList.add('hidden');
+          resultContainer.classList.remove('hidden');
 
-            if (qrSectionHeader) {
-              qrSectionHeader.classList.add('hidden');
-            }
-
-            // Trigger counters
-            const counters = resultContainer.querySelectorAll('.new-counter');
-            counters.forEach(c => {
-              // reset counter content to 0
-              c.textContent = '0';
-              animateCounter(c);
-            });
-
-            // Scroll to top of page 8 just to be sure
-            pages[8].scrollTop = 0;
-          } else {
-            // Fallback for other codes
-            goToPage(1);
+          if (qrSectionHeader) {
+            qrSectionHeader.classList.add('hidden');
           }
+
+          // Cập nhật mã sản phẩm hiển thị theo mã khách nhập vào
+          const codeDisplay = resultContainer.querySelector('.revealed-bag-code');
+          if (codeDisplay) {
+            codeDisplay.textContent = 'Mã SP: ' + code;
+          }
+
+          // Kích hoạt chạy số
+          const counters = resultContainer.querySelectorAll('.new-counter');
+          counters.forEach(c => {
+            c.textContent = '0';
+            animateCounter(c);
+          });
+
+          // Cuộn lên đẩu trang để xem rõ giao diện
+          pages[8].scrollTop = 0;
         }, 1200);
       }, 1500);
     } else {
