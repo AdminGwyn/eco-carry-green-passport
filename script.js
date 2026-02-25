@@ -418,6 +418,8 @@ function initQRLookup() {
 
   // ===== Scan QR from File Upload =====
   const qrFileInput = document.getElementById('qrFileInput');
+  let html5QrCodeFile = null;
+
   if (qrFileInput) {
     qrFileInput.addEventListener('change', (e) => {
       if (e.target.files.length === 0) return;
@@ -425,13 +427,18 @@ function initQRLookup() {
 
       if (typeof Html5Qrcode === 'undefined') {
         qrScanStatus.textContent = 'Không tải được thư viện quét mã.';
+        qrFileInput.value = '';
         return;
       }
 
       qrScanStatus.textContent = 'Đang đọc thẻ mã QR...';
-      const html5QrCode = new Html5Qrcode("qrReader");
 
-      html5QrCode.scanFile(file, false)
+      if (!html5QrCodeFile) {
+        // Instantiate once
+        html5QrCodeFile = new Html5Qrcode("qrReaderFile");
+      }
+
+      html5QrCodeFile.scanFile(file, false)
         .then(decodedText => {
           let currentCode = decodedText;
           if (currentCode.includes('eco-carry.site')) {
