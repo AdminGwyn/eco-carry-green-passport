@@ -410,10 +410,49 @@ function initQRLookup() {
       });
     });
   }
-
   if (stopQrScanBtn) {
     stopQrScanBtn.addEventListener('click', () => {
       stopScan();
+    });
+  }
+
+  // ===== Scan QR from File Upload =====
+  const qrFileInput = document.getElementById('qrFileInput');
+  if (qrFileInput) {
+    qrFileInput.addEventListener('change', (e) => {
+      if (e.target.files.length === 0) return;
+      const file = e.target.files[0];
+
+      if (typeof Html5Qrcode === 'undefined') {
+        qrScanStatus.textContent = 'Không tải được thư viện quét mã.';
+        return;
+      }
+
+      qrScanStatus.textContent = 'Đang đọc thẻ mã QR...';
+      const html5QrCode = new Html5Qrcode("qrReader");
+
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+          let currentCode = decodedText;
+          if (currentCode.includes('eco-carry.site')) {
+            const match = currentCode.match(/ECO-\d{4}-\d{4}/i);
+            if (match) currentCode = match[0];
+            else currentCode = 'ECO-2026-0001';
+          }
+          input.value = currentCode;
+          qrScanStatus.textContent = 'Nhấn vào biểu tượng để bật Camera quét mã';
+          btn.click(); // Auto submit result
+        })
+        .catch(err => {
+          qrScanStatus.textContent = 'Không tìm thấy hoặc không thể đọc được mã QR trong ảnh này.';
+          setTimeout(() => {
+            qrScanStatus.textContent = 'Nhấn vào biểu tượng để bật Camera quét mã';
+          }, 3500);
+        })
+        .finally(() => {
+          html5QrCode.clear(); // Important: cleanup
+          qrFileInput.value = ''; // Reset file input so user can upload same file again if wanted
+        });
     });
   }
 }

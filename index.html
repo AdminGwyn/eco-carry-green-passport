@@ -523,6 +523,13 @@
               </svg>
             </div>
             <p class="qr-text" id="qrScanStatus">Nhấn vào biểu tượng để bật Camera quét mã</p>
+            <div style="margin-top: 10px;">
+              <input type="file" id="qrFileInput" accept="image/*" style="display: none;">
+              <label for="qrFileInput"
+                style="cursor: pointer; color: var(--forest-green); font-size: 0.9rem; font-weight: 600; text-decoration: underline;">
+                Hoặc tải ảnh mã QR từ máy
+              </label>
+            </div>
             <button class="qr-scan-btn hidden" id="stopQrScanBtn"
               style="margin-top: 15px; background-color: #e74c3c; border: none;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
